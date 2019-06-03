@@ -12,7 +12,7 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 
 class AutoDL():
-    def __init__(self):
+    def __init__(self, data_dir='./data/', input_shape=(224,224,3)):
         # 1. Get Image Data Generators
         datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
         self.train_loader = datagen.flow_from_directory(f'{data_dir}train', target_size=input_shape[:2], class_mode='sparse', batch_size=10)
@@ -27,7 +27,7 @@ class AutoDL():
 
         # 4. Add Fully connected layer
         
-        class_indices = train_loader.class_indices
+        class_indices = self.train_loader.class_indices
         
         self.index_to_class = {v: k for k, v in class_indices.items()}
 
@@ -39,9 +39,7 @@ class AutoDL():
                             Dense(1024, activation='relu'),
                             Dense(number_of_classes, activation='softmax')])
         
-    def __call__(self):
-        self.run()
-    
+        
     def img_from_filepath(self, filepath):
         img = load_img(filepath, target_size=(224, 224))
         return img
@@ -86,7 +84,7 @@ class AutoDL():
         #return self.index_to_class[result.argmax()]
 
 
-    def run(self, data_dir='./data/', input_shape=(224,224,3), best_model_filename='best_model.hdf5'):
+    def run(self, best_model_filename='best_model.hdf5'):
 
         # 5. Define checkpoint
         checkpoint = ModelCheckpoint(best_model_filename, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
