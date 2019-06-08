@@ -12,11 +12,11 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 
 class AutoDL():
-    def __init__(self, data_dir='./data/', input_shape=(224,224,3), valid_folder_name='valid', train_folder_name='train'):
+    def __init__(self, data_dir='./data/', input_shape=(224,224,3), valid_folder_name='valid', train_folder_name='train', batch_size=32):
         # 1. Get Image Data Generators
         datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
-        self.train_loader = datagen.flow_from_directory(f'{data_dir}{train_folder_name}', target_size=input_shape[:2], class_mode='sparse', batch_size=10)
-        self.valid_loader = datagen.flow_from_directory(f'{data_dir}{valid_folder_name}', target_size=input_shape[:2], class_mode='sparse', batch_size=10)
+        self.train_loader = datagen.flow_from_directory(f'{data_dir}{train_folder_name}', target_size=input_shape[:2], class_mode='sparse', batch_size=batch_size)
+        self.valid_loader = datagen.flow_from_directory(f'{data_dir}{valid_folder_name}', target_size=input_shape[:2], class_mode='sparse', batch_size=batch_size)
 
         # 2. Initialize base model
         base_model = VGG16(include_top=False, input_shape=input_shape)
@@ -84,13 +84,13 @@ class AutoDL():
         #return self.index_to_class[result.argmax()]
 
 
-    def run(self, best_model_filename='best_model.hdf5'):
+    def run(self, best_model_filename='best_model.hdf5', epochs=10, learning_rate=1e-4):
 
         # 5. Define checkpoint
         checkpoint = ModelCheckpoint(best_model_filename, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
 
         # 6. Train the model
-        self.model.compile(optimizer=Adam(lr=1e-4), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+        self.model.compile(optimizer=Adam(lr=learning_rate), loss='sparse_categorical_crossentropy', metrics=['accuracy'])
 
-        self.model.fit_generator(self.train_loader, self.train_loader.n//self.train_loader.batch_size, epochs=10,
+        self.model.fit_generator(self.train_loader, self.train_loader.n//self.train_loader.batch_size, epochs=epochs,
                         validation_data=self.valid_loader, validation_steps=self.valid_loader.n//self.valid_loader.batch_size, callbacks=[checkpoint])
