@@ -12,11 +12,11 @@ from io import BytesIO
 import matplotlib.pyplot as plt
 
 class AutoDL():
-    def __init__(self, data_dir='./data/', input_shape=(224,224,3)):
+    def __init__(self, data_dir='./data/', input_shape=(224,224,3), valid_folder_name='valid', train_folder_name='train'):
         # 1. Get Image Data Generators
         datagen = ImageDataGenerator(preprocessing_function=preprocess_input)
-        self.train_loader = datagen.flow_from_directory(f'{data_dir}train', target_size=input_shape[:2], class_mode='sparse', batch_size=10)
-        self.valid_loader = datagen.flow_from_directory(f'{data_dir}valid', target_size=input_shape[:2], class_mode='sparse', batch_size=10)
+        self.train_loader = datagen.flow_from_directory(f'{data_dir}{train_folder_name}', target_size=input_shape[:2], class_mode='sparse', batch_size=10)
+        self.valid_loader = datagen.flow_from_directory(f'{data_dir}{valid_folder_name}', target_size=input_shape[:2], class_mode='sparse', batch_size=10)
 
         # 2. Initialize base model
         base_model = VGG16(include_top=False, input_shape=input_shape)
