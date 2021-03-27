@@ -1,6 +1,30 @@
 from torch.utils.data.sampler import SubsetRandomSampler
 import numpy as np
 import torch
+import torchvision
+import matplotlib.pyplot as plt
+
+def inverse_normalize(tensor, mean, std):
+    for t, m, s in zip(tensor, mean, std):
+        t.mul_(s).add_(m)
+    return tensor
+
+def imshow(img, labels, classes):
+    img = inverse_normalize(img, 
+                            mean=IMGS_MEAN, 
+                            std=IMGS_STD)
+    npimg = img.numpy()
+    npimg = np.clip(npimg, 0, 1)
+    plt.imshow(np.transpose(npimg, (1, 2, 0)))
+    plt.title([classes[l] for l in labels])
+    plt.show()
+
+def show_imgs_from_batch(img_loader, n_imgs, img_set):
+    dataiter = iter(img_loader)
+    images, labels = dataiter.next()
+    images, labels = images[:n_imgs], labels[:n_imgs]
+    plt.figure(figsize=(20, 20))
+    imshow(torchvision.utils.make_grid(images, nrow=4), labels, img_set.classes)
 
 def train_val_split(dataset, batch_size=16, validation_split=.2, 
                     shuffle_dataset=True, random_seed=42):
